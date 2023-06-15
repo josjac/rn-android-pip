@@ -9,6 +9,7 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.LifecycleEventListener;
 
 import android.app.PictureInPictureParams;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Rational;
 
@@ -32,7 +33,7 @@ public class RNAndroidPipModule extends ReactContextBaseJavaModule implements Li
         super(reactContext);
         this.reactContext = reactContext;
         reactContext.addLifecycleEventListener(this);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && reactContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)) {
             isPipSupported = true;
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
