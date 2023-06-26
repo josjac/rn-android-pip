@@ -33,8 +33,13 @@ public class RNAndroidPipModule extends ReactContextBaseJavaModule implements Li
         super(reactContext);
         this.reactContext = reactContext;
         reactContext.addLifecycleEventListener(this);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && reactContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)) {
-            isPipSupported = true;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            PackageManager packageManager = reactContext.getPackageManager();
+            if (packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)) {
+              // Picture-in-Picture está disponible
+              // Puedes habilitar la funcionalidad de PiP aquí
+              isPipSupported = true;
+            }
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             isCustomAspectRatioSupported = true;
