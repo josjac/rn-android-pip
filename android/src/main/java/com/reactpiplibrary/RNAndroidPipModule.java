@@ -8,6 +8,7 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.LifecycleEventListener;
 
+import android.app.Activity;
 import android.app.PictureInPictureParams;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -33,7 +34,7 @@ public class RNAndroidPipModule extends ReactContextBaseJavaModule implements Li
         super(reactContext);
         this.reactContext = reactContext;
         reactContext.addLifecycleEventListener(this);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             PackageManager packageManager = reactContext.getPackageManager();
             if (packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)) {
               // Picture-in-Picture está disponible
@@ -57,18 +58,27 @@ public class RNAndroidPipModule extends ReactContextBaseJavaModule implements Li
         if (isPipSupported) {
             AppOpsManager manager = (AppOpsManager) reactContext.getSystemService(Context.APP_OPS_SERVICE);
             if (manager != null) {
-                int modeAllowed = manager.checkOpNoThrow(AppOpsManager.OPSTR_PICTURE_IN_PICTURE, Process.myUid(),
-                    reactContext.getPackageName());
+              int modeAllowed = 0;
+              if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                modeAllowed = manager.checkOpNoThrow(AppOpsManager.OPSTR_PICTURE_IN_PICTURE, Process.myUid(),
+                  reactContext.getPackageName());
 
                 if (modeAllowed == AppOpsManager.MODE_ALLOWED) {
-                    if (isCustomAspectRatioSupported) {
-                        PictureInPictureParams params = new PictureInPictureParams.Builder()
-                                .setAspectRatio(this.aspectRatio).build();
-                        getCurrentActivity().enterPictureInPictureMode(params);
-                    } else {
-                        getCurrentActivity().enterPictureInPictureMode();
+                  if (isCustomAspectRatioSupported) {
+                    PictureInPictureParams params = new PictureInPictureParams.Builder()
+                      .setAspectRatio(this.aspectRatio).build();
+                    Activity currentActivity = getCurrentActivity();
+                    if (currentActivity != null) {
+                      currentActivity.enterPictureInPictureMode(params);
                     }
+                  } else {
+                    Activity currentActivity = getCurrentActivity();
+                    if (currentActivity != null) {
+                      currentActivity.enterPictureInPictureMode();
+                    }
+                  }
                 }
+              }
             }
         }
     }
@@ -77,10 +87,13 @@ public class RNAndroidPipModule extends ReactContextBaseJavaModule implements Li
     public void hasSpecialPipPermission(final Promise promise) {
         AppOpsManager manager = (AppOpsManager) reactContext.getSystemService(Context.APP_OPS_SERVICE);
         if (manager != null) {
-            int modeAllowed = manager.checkOpNoThrow(AppOpsManager.OPSTR_PICTURE_IN_PICTURE, Process.myUid(),
+          int modeAllowed = 0;
+          if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            modeAllowed = manager.checkOpNoThrow(AppOpsManager.OPSTR_PICTURE_IN_PICTURE, Process.myUid(),
                     reactContext.getPackageName());
+          }
 
-            if (modeAllowed == AppOpsManager.MODE_ALLOWED) {
+          if (modeAllowed == AppOpsManager.MODE_ALLOWED) {
                 promise.resolve("Permission enabled");
                 return;
             }
